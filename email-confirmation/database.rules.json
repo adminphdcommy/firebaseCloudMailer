@@ -1,6 +1,17 @@
 {
   "rules": {
-    "users": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+      "pendingSuggestion":{
+        ".indexOn": "suggestCategory"
+      },
+      "orderList":{
+        ".indexOn": "userOrderNumber"
+      },
+      "restaurants":{
+        ".indexOn": "name"
+      },
+	  "users": {
       "$uid": {
         ".read": "auth.uid === $uid",
         ".write": "auth.uid === $uid"

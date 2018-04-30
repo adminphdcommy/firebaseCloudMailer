@@ -1,5 +1,6 @@
 {
   "projects": {
-    "emailer": "food-ninja-mobile"
+    "emailer": "food-ninja-mobile",
+    "default": "food-ninja-mobile"
   }
 }
