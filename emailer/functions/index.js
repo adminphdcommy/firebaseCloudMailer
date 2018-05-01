@@ -50,7 +50,9 @@ exports.sendEmail = functions.https.onRequest((req, res) => {
   }
 });
 
-exports.sendEmailByDbStatusChange = functions.database.ref('/users/{uid}').onWrite((event) => {
+exports.sendEmailByDbStatusChange = functions.database.ref('/users/{uid}').onWrite((change, context) => {
+  const snapshot = change.after;
+  const val = snapshot.val();
   //const snapshot = event.data;
   //const val = snapshot.val();
 
@@ -58,9 +60,9 @@ exports.sendEmailByDbStatusChange = functions.database.ref('/users/{uid}').onWri
   //  return null;
   //}
 
-  const mailSubject = 'Sending email with Cloud Function - by DB onWrite Trigger';
-  const mailHtmlBody = '<h1>Hello Jerry</h1><p>If you receiving this means that you have successfully deployed a customized firebase function</p><p>Be Happy!<br><br>Food Ninja Team</p>';
-  const mailRecipient = 'admin@phd.com.my';
+  const mailSubject = 'Sending email with Cloud Function - bysendEmailByDbStatusChange';
+  const mailHtmlBody = '<h1>Hello ' + val.email + ' </h1><p>If you receiving this means that you have successfully deployed a customized firebase function</p><p>Be Happy!<br><br>Food Ninja Team</p>';
+  const mailRecipient = val.email;
 
   const mailOptions = {
     from: '"Food Ninja." <foodninjaapp@gmail.com>',
@@ -77,36 +79,46 @@ exports.sendEmailByDbStatusChange = functions.database.ref('/users/{uid}').onWri
 
   return mailTransport.sendMail(mailOptions)
     .then(() =>
-      console.log(`${mailSubject}subscription confirmation email sent to: `, mailRecipient)
+      console.log(`${mailSubject} email sent to: `, mailRecipient)
       //return res.status(200).send('Success: ' + mailSubject + ' to ' + mailRecipient)
     )
     .catch((error) => console.error('There was an error while sending the email:', error));
 });
 
-exports.sendEmailConfirmation = functions.database.ref('/users/{uid}').onWrite((event2) => {
-  console.log(event2)
-  console.log(event2.val())
-  console.log(event2.val().data)
-  console.log(event2.data)
-  console.log(event2.data.val())
-  const snapshot = event2.data;
-  console.log(snapshot)
+exports.sendEmailConfirmation = functions.database.ref('/users/{uid}').onWrite((change, context) => {
+  console.log(change)
+  console.log(change.after.val())
+  console.log(change.before.val())
+  // console.log(context)
+  // console.log(context.auth)
+  // console.log(context.authType)
+  // console.log(context.eventId)
+  // console.log(context.eventType)
+  // console.log(context.params)
+  // console.log(context.resource)
+  // console.log(context.timestamp)
+  
+  const snapshot = change.after;
   const val = snapshot.val();
   console.log(val)
-
-  if (!snapshot.changed('subscribedToMailingList')) {
+  console.log(snapshot)
+  console.log(val.subscribedToMailingList)
+  console.log(val['subscribedToMailingList'])
+  console.log(val.hasOwnProperty('subscribedToMailingList'))
+  if (!val.hasOwnProperty('subscribedToMailingList')) {
+    console.log('fall in to return null')
     return null;
   }
 
   const mailOptions = {
-    from: '"Spammy Corp." <noreply@firebase.com>',
+    from: '"Food Ninja." <foodninjaapp@gmail.com>',
     to: val.email,
   };
 
   const subscribed = val.subscribedToMailingList;
 
   // Building Email message.
-  mailOptions.subject = subscribed ? 'Thanks and Welcome!' : 'Sad to see you go :`(';
+  mailOptions.subject = subscribed ? 'Thanks and Welcome! - by sendEmailConfirmation' : 'Sad to see you go :`( - by sendEmailConfirmation';
   mailOptions.text = subscribed ? 'Thanks you for subscribing to our newsletter. You will receive our next weekly newsletter.' : 'I hereby confirm that I will stop sending you the newsletter.';
 
   return mailTransport.sendMail(mailOptions)
